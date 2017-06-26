@@ -50,11 +50,29 @@ public class BakingRecipeStepDetailFragment extends Fragment implements OnPrepar
     private static final String LOG_TAG = BakingRecipeStepDetailFragment.class.getSimpleName();
 
     @Override
+    public void onPause() {
+        super.onPause();
+        if(videoView != null){
+            videoView.release();
+        }
+    }
+
+    @Override
     public void onDestroyView() {
         super.onDestroyView();
         if(videoView != null) {
             videoView.release();
         }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
     }
 
     @Nullable
@@ -168,7 +186,7 @@ public class BakingRecipeStepDetailFragment extends Fragment implements OnPrepar
         btnNext.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(step!= null) {
+                if(step != null) {
                     setPosition(step.getStepId() + 1);
                 }
             }
@@ -176,9 +194,10 @@ public class BakingRecipeStepDetailFragment extends Fragment implements OnPrepar
     }
     public void setPosition(int pos){
         position = pos;
-        if(position>=0 && position<steps.size()) {
+        if(position >=0 && position<steps.size()) {
             step = steps.get(position);
         }else{
+            step = steps.get(0);
             Toast.makeText(getActivity().getApplicationContext(),"Not Applied",Toast.LENGTH_SHORT);
         }
         createLayouts();
