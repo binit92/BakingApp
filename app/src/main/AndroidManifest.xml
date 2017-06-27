@@ -2,6 +2,7 @@
     package="com.mynanodegreeapps.bakingapp">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
 
     <application
         android:allowBackup="true"
@@ -24,13 +25,13 @@
 
     <activity
         android:name="com.mynanodegreeapps.bakingapp.activity.BakingDetailActivity"
-        android:label="@string/text_baking_detail" />
+        android:label="@string/text_baking_detail"
+        android:parentActivityName=".activity.BakingActivity"/>
 
     <receiver android:name="com.mynanodegreeapps.bakingapp.widget.BakingAppWidgetProvider">
         <intent-filter>
             <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
         </intent-filter>
-
         <meta-data
             android:name="android.appwidget.provider"
             android:resource="@xml/bakingappwidgetprovider_info" />

@@ -64,13 +64,13 @@ public class RecipeImageAdapter extends RecyclerView.Adapter<RecipeImageAdapter.
         }else{
             // Get Details from Network
             String imageUrl = selectedRecipe.getImage();
-            Log.d(LOG_TAG,"imageUrl is" + imageUrl);
+            //Log.d(LOG_TAG,"imageUrl is" + imageUrl);
 
             //Automatically creates background thread and loads image
             try {
                 Picasso.with(c).load(imageUrl).into(imageView);
             }catch (Throwable t) {
-                Log.i(LOG_TAG, " No Image URL in json, loading default image.");
+              //  Log.i(LOG_TAG, " No Image URL in json, loading default image.");
                 Picasso.with(c).load(R.drawable.baking_junkfood).into(imageView);
             }
 

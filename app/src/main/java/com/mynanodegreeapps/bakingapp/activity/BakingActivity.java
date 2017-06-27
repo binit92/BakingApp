@@ -2,13 +2,17 @@ package com.mynanodegreeapps.bakingapp.activity;
 
 import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -55,8 +59,23 @@ public class BakingActivity extends AppCompatActivity implements IVolleyCallback
 
         recipeGrid.setClickable(true);
         recipeListRequestQueue =  Volley.newRequestQueue(getApplicationContext());
-        getRecipes(this);
 
+        if(isNetworkConnectivityAvailable()) {
+            getRecipes(this);
+        }else{
+            Toast.makeText(getApplicationContext(),"Network in Unavailable",Toast.LENGTH_LONG);
+        }
+
+    }
+
+    public boolean isNetworkConnectivityAvailable(){
+        ConnectivityManager cm =
+                (ConnectivityManager)getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        boolean isConnected = activeNetwork != null &&
+                activeNetwork.isConnectedOrConnecting();
+        return  isConnected;
     }
 
     public  void getRecipes(final IVolleyCallback callback){
@@ -73,9 +92,12 @@ public class BakingActivity extends AppCompatActivity implements IVolleyCallback
                         List<Recipe> recipes = reader.parseJSON(response);
                         recipeArrayList = recipes;
 
-                        recipeImageAdapter = new RecipeImageAdapter(getApplicationContext(), recipeArrayList, RecipeImageAdapter.SOURCE_NETWORK);
-                        recipeGrid.setAdapter(recipeImageAdapter);
-                        if(response != null) {
+
+                        if(recipeArrayList.isEmpty()){
+                            Toast.makeText(getApplicationContext(),"No Data Available ",Toast.LENGTH_SHORT);
+                        }else{
+                            recipeImageAdapter = new RecipeImageAdapter(getApplicationContext(), recipeArrayList, RecipeImageAdapter.SOURCE_NETWORK);
+                            recipeGrid.setAdapter(recipeImageAdapter);
                             callback.markSuccess();
                         }
                     }
@@ -92,7 +114,7 @@ public class BakingActivity extends AppCompatActivity implements IVolleyCallback
 
     @Override
     public boolean markSuccess() {
-        Log.d(LOG_TAG," Successful reply ! ");
+       // Log.d(LOG_TAG," Successful reply ! ");
         updateWidget();
         return true;
     }
