@@ -64,18 +64,10 @@ public class BakingAppRemoteViewFactory implements RemoteViewsService.RemoteView
 
         int id = recipeArrayList.get(pos).getRecipeId();
 
-        // Fill in the onClick PendingIntent Template for each recipe
-/*
-        Bundle extras = new Bundle();
-        extras.putInt("id",id);
-        Intent fillInIntent = new Intent();
-        fillInIntent.putExtras(extras);
-        rv.setOnClickFillInIntent(R.id.recipeName,fillInIntent);
-*/
 
         List<Ingredient> ingredients = getIngredients(id-1);
         StringBuffer buffer = new StringBuffer();
-        buffer.append("INGREDIENTS : ");
+        buffer.append(R.string.ingredients_tag);
         for(int i=0; i<ingredients.size(); i++){
             buffer.append(ingredients.get(i).getIngredient() + "");
         }

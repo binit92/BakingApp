@@ -1,9 +1,16 @@
 package com.mynanodegreeapps.bakingapp.activity;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.media.session.MediaButtonReceiver;
+import android.support.v4.media.session.MediaSessionCompat;
+import android.support.v4.media.session.PlaybackStateCompat;
+
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,24 +21,38 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.devbrackets.android.exomedia.listener.OnPreparedListener;
-import com.devbrackets.android.exomedia.ui.widget.VideoView;
+import com.google.android.exoplayer2.DefaultLoadControl;
+import com.google.android.exoplayer2.ExoPlaybackException;
+import com.google.android.exoplayer2.ExoPlayer;
+import com.google.android.exoplayer2.ExoPlayerFactory;
+import com.google.android.exoplayer2.LoadControl;
+import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.exoplayer2.Timeline;
+import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
+import com.google.android.exoplayer2.source.ExtractorMediaSource;
+import com.google.android.exoplayer2.source.MediaSource;
+import com.google.android.exoplayer2.source.TrackGroupArray;
+import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
+import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
+import com.google.android.exoplayer2.trackselection.TrackSelector;
+import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
+import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
+import com.google.android.exoplayer2.util.Util;
 import com.mynanodegreeapps.bakingapp.model.Ingredient;
 import com.mynanodegreeapps.bakingapp.model.Step;
 import com.mynanodegreeapps.bakingapp.util.IRecipeStepCallback;
 import com.squareup.picasso.Picasso;
 
-import java.util.List;
-
 import com.mynanodegreeapps.bakingapp.R;
+
+import java.util.List;
 
 
 /*  This Fragment will the show the details of Recipe Step i.e. details of "ingredients"
     and details of each recipe step that includes picture/video, recipe instruction and navigation etc"
  */
 
-public class BakingRecipeStepDetailFragment extends Fragment implements OnPreparedListener {
-
+public class BakingRecipeStepDetailFragment extends Fragment implements ExoPlayer.EventListener{
 
     View rootView;
     LinearLayout videoLayout;
@@ -41,7 +62,11 @@ public class BakingRecipeStepDetailFragment extends Fragment implements OnPrepar
     Step step;
     int position;
 
-    private VideoView videoView;
+    private SimpleExoPlayer mExoPlayer;
+    private SimpleExoPlayerView mExoPlayerView;
+    private static MediaSessionCompat mMediaSession;
+    private PlaybackStateCompat.Builder mStateBuilder;
+
     private IRecipeStepCallback recipeStepCallback;
 
     Button btnPrev;
@@ -52,27 +77,25 @@ public class BakingRecipeStepDetailFragment extends Fragment implements OnPrepar
     @Override
     public void onPause() {
         super.onPause();
-        if(videoView != null){
-            videoView.release();
+        releasePlayer();
+        if(mMediaSession != null){
+           mMediaSession.setActive(false);
         }
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        if(videoView != null) {
-            videoView.release();
+        releasePlayer();
+        if (mMediaSession != null) {
+            mMediaSession.setActive(false);
         }
     }
 
     @Override
     public void onResume() {
         super.onResume();
-    }
 
-    @Override
-    public void onStart() {
-        super.onStart();
     }
 
     @Nullable
@@ -92,7 +115,6 @@ public class BakingRecipeStepDetailFragment extends Fragment implements OnPrepar
                 btnNext = (Button) rootView.findViewById(R.id.btn_next);
                 buttonClickListeners();
             }
-
         }
         return rootView;
     }
@@ -152,12 +174,14 @@ public class BakingRecipeStepDetailFragment extends Fragment implements OnPrepar
 
     public void createVideoLayout(Step step, LinearLayout videoLayout, LinearLayout parentLayout){
 
-        if(videoView == null) {
-            videoView = (VideoView) videoLayout.findViewById(R.id.video_view1);
+        // Initialize ExoPlayer
+        if(mExoPlayerView == null) {
+            mExoPlayerView = (SimpleExoPlayerView) rootView.findViewById(R.id.video_view1);
         }
-        videoView.setVideoURI(Uri.parse(step.getVideoUrl()));
-        videoView.setOnPreparedListener(this);
+        releasePlayer();
 
+        initializeMediaSession();
+        initializeExoPlayer(Uri.parse(step.getVideoUrl()));
 
         if(step.getDescription() != null) {
             TextView stepDescription = new TextView(getActivity().getApplicationContext());
@@ -178,7 +202,7 @@ public class BakingRecipeStepDetailFragment extends Fragment implements OnPrepar
             @Override
             public void onClick(View view) {
                 if(step != null) {
-                    setPosition(step.getStepId() - 1);
+                    setPosition(step.getStepId() -1);
                 }
             }
         });
@@ -187,26 +211,149 @@ public class BakingRecipeStepDetailFragment extends Fragment implements OnPrepar
             @Override
             public void onClick(View view) {
                 if(step != null) {
-                    setPosition(step.getStepId() + 1);
+                     setPosition(step.getStepId()+1);
+                }else if(step == null && position <0){
+                    setPosition(0);
                 }
             }
         });
     }
     public void setPosition(int pos){
         position = pos;
+        System.out.println("--> position is " + position);
         if(position >=0 && position<steps.size()) {
             step = steps.get(position);
-        }else{
-            step = steps.get(0);
-            Toast.makeText(getActivity().getApplicationContext(),"Not Applied",Toast.LENGTH_SHORT);
         }
         createLayouts();
     }
 
-    @Override
-    public void onPrepared() {
-        videoView.start();
+    private void initializeExoPlayer(Uri mediaUri){
+        System.out.println("--> mediaUri is " + mediaUri);
+            if(mExoPlayer == null){
+            // create an instance of exoplayer
+            TrackSelector trackSelector = new DefaultTrackSelector();
+            LoadControl loadControl = new DefaultLoadControl();
+            mExoPlayer = ExoPlayerFactory.newSimpleInstance(getContext(),trackSelector,loadControl);
+            mExoPlayerView.setPlayer(mExoPlayer);
+
+            mExoPlayer.addListener(this);
+
+            // prepare the media source
+            String userAgent = Util.getUserAgent(getContext(), getContext().getString(R.string.app_name));
+            MediaSource mediaSource = new ExtractorMediaSource(mediaUri, new DefaultDataSourceFactory(getContext(),
+                    userAgent), new DefaultExtractorsFactory(), null, null);
+            mExoPlayer.prepare(mediaSource);
+            mExoPlayer.setPlayWhenReady(true);
+        }
+    }
+
+    private void releasePlayer(){
+        if(mExoPlayer != null) {
+            mExoPlayer.stop();
+            mExoPlayer.release();
+            mExoPlayer = null;
+        }
+    }
+
+    private void initializeMediaSession(){
+        // Create a MediaSessionCompat.
+        mMediaSession = new MediaSessionCompat(getContext(),LOG_TAG);
+
+        // Enable callbacks from MediaButtons and TransportControls
+        mMediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS |
+                                MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
+
+        // Do not let MediaButtons restart the player when app is not visible
+        mMediaSession.setMediaButtonReceiver(null);
+
+        // Set an initial playback with ACTION_PLAY, so media buttons can start the player
+        mStateBuilder  = new PlaybackStateCompat.Builder()
+                        .setActions(
+                                    PlaybackStateCompat.ACTION_PLAY |
+                                    PlaybackStateCompat.ACTION_PAUSE);
+
+        mMediaSession.setPlaybackState(mStateBuilder.build());
+
+        // MySessionCallback has methods that handle callbacks from media controller
+        mMediaSession.setCallback(new MySessionCallback());
+
+        // Start the media Session since fragment is active
+        mMediaSession.setActive(true);
+
+
     }
 
 
+    @Override
+    public void onTimelineChanged(Timeline timeline, Object manifest) {
+
+    }
+
+    @Override
+    public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
+
+    }
+
+    @Override
+    public void onLoadingChanged(boolean isLoading) {
+
+    }
+
+    @Override
+    public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
+        if((playbackState == ExoPlayer.STATE_READY) && playWhenReady){
+            mStateBuilder.setState(PlaybackStateCompat.STATE_PLAYING,
+                    mExoPlayer.getCurrentPosition(), 1f);
+        } else if((playbackState == ExoPlayer.STATE_READY)){
+            mStateBuilder.setState(PlaybackStateCompat.STATE_PAUSED,
+                    mExoPlayer.getCurrentPosition(), 1f);
+        }
+        mMediaSession.setPlaybackState(mStateBuilder.build());
+    }
+
+    @Override
+    public void onPlayerError(ExoPlaybackException error) {
+
+    }
+
+    @Override
+    public void onPositionDiscontinuity() {
+
+    }
+
+    /**
+     * Media Session Callbacks, where all external clients control the player.
+     */
+    private class MySessionCallback extends MediaSessionCompat.Callback {
+        @Override
+        public void onPlay() {
+            mExoPlayer.setPlayWhenReady(true);
+        }
+
+        @Override
+        public void onPause() {
+            mExoPlayer.setPlayWhenReady(false);
+        }
+
+        @Override
+        public void onSkipToPrevious() {
+            mExoPlayer.seekTo(0);
+        }
+    }
+
+    /**
+     * Broadcast Receiver registered to receive the MEDIA_BUTTON intent coming from clients.
+     */
+    public static class MediaReceiver extends BroadcastReceiver {
+
+        public MediaReceiver() {
+        }
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            MediaButtonReceiver.handleIntent(mMediaSession, intent);
+        }
+    }
+
 }
+

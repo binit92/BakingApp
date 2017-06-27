@@ -3,12 +3,11 @@ package com.mynanodegreeapps.bakingapp.util;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-
+import android.widget.TextView;
 
 import com.mynanodegreeapps.bakingapp.R;
 import com.mynanodegreeapps.bakingapp.activity.BakingDetailActivity;
@@ -16,7 +15,6 @@ import com.mynanodegreeapps.bakingapp.model.Recipe;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
-
 
 
 public class RecipeImageAdapter extends RecyclerView.Adapter<RecipeImageAdapter.ViewHolder> {
@@ -56,10 +54,10 @@ public class RecipeImageAdapter extends RecyclerView.Adapter<RecipeImageAdapter.
 
         // Set item views based on your views and data model
         ImageView imageView = viewHolder.recipeImage;
+        TextView recipeText = viewHolder.recipeText;
 
         if(source == SOURCE_DB) {
             /* Todo : Get details from Database !
-
             */
         }else{
             // Get Details from Network
@@ -70,16 +68,26 @@ public class RecipeImageAdapter extends RecyclerView.Adapter<RecipeImageAdapter.
             try {
                 Picasso.with(c).load(imageUrl).into(imageView);
             }catch (Throwable t) {
-              //  Log.i(LOG_TAG, " No Image URL in json, loading default image.");
                 Picasso.with(c).load(R.drawable.baking_junkfood).into(imageView);
             }
-
             imageView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     Intent intent = new Intent(c,BakingDetailActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     intent.putExtra("recipe",selectedRecipe);
+                    c.startActivity(intent);
+                }
+            });
+
+            String recipeName = selectedRecipe.getName();
+            recipeText.setText(recipeName);
+            recipeText.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(c,BakingDetailActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    intent.putExtra("recipe", selectedRecipe);
                     c.startActivity(intent);
                 }
             });
@@ -97,14 +105,15 @@ public class RecipeImageAdapter extends RecyclerView.Adapter<RecipeImageAdapter.
         // Your holder should contain a member variable
         // for any view that will be set as you render a row
         ImageView recipeImage;
+        TextView recipeText;
         // We also create a constructor that accepts the entire item row
         // and does the view lookups to find each subview
         public ViewHolder(View itemView) {
             // Stores the itemView in a public final member variable that can be used
             // to access the context from any ViewHolder instance.
             super(itemView);
-
             recipeImage = (ImageView) itemView.findViewById(R.id.recipeImage);
+            recipeText =  (TextView) itemView.findViewById(R.id.recipeText);
         }
     }
 }

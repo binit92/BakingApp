@@ -11,5 +11,6 @@
     <string name="baking_next">Next</string>
     <string name="appwidget_text">Baking App</string>
     <string name="add_widget">Baking App</string>
+    <string name="ingredients_tag">Ingredients: </string>
 
 </resources>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+    android:orientation="horizontal"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:gravity="center"
@@ -8,10 +8,22 @@
 
     <ImageView
         android:id="@+id/recipeImage"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_weight="1"
         android:focusable="true"
         android:clickable="true"
         android:adjustViewBounds="true"/>
+
+    <TextView
+        android:id="@+id/recipeText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="2"
+        android:textSize="@dimen/bakingrecipe_textSize"
+        android:clickable="true"
+        android:layout_gravity="center"
+        android:layout_marginStart="@dimen/margin"
+        android:textColor="@color/colorPrimaryDark"/>
 
 </LinearLayout>
