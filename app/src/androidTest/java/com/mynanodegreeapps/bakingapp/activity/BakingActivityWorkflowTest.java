@@ -40,7 +40,7 @@ public class BakingActivityWorkflowTest {
 
     // Register any resource that need to be synchronized with Espresso before the test is run
     @Before
-    public void registerIdlingResource(){
+    public void registerIdlingResource() throws NoSuchFieldException {
         BakingActivity activity = mActivityTestRule.getActivity();
         idlingResource = new BakingActivityIdlingResource(activity);
 

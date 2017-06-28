@@ -39,7 +39,11 @@ public class IdlingResourceBakingActivityTest {
     @Before
     public void registerIdlingResource(){
         BakingActivity activity = mBakingActivityTestRule.getActivity();
-        idlingResource = new BakingActivityIdlingResource(activity);
+        try {
+            idlingResource = new BakingActivityIdlingResource(activity);
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        }
 
         Espresso.registerIdlingResources(idlingResource);
     }
@@ -48,7 +52,7 @@ public class IdlingResourceBakingActivityTest {
     public void testToRunAfterSync(){
        //[NotWorking] onData(anything()).inAdapterView(withId(R.id.recipeGrid)).atPosition(0).perform(click());
         //[Working]  onView(ViewMatchers.withId(R.id.recipeGrid)).check(ViewAssertions.matches(ViewMatchers.isDisplayed()));
-        onView(withId(R.id.recipeGrid)).perform(actionOnItemAtPosition(0, click()));
+        onView(withId(R.id.recipeGrid)).perform(actionOnItemAtPosition(1, click()));
         //[NotWorking] onView(ViewMatchers.withId(R.id.recipeImage)).check(ViewAssertions.matches(ViewMatchers.isDisplayed()));
     }
 

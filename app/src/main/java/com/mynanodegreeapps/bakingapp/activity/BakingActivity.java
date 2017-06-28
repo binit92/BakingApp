@@ -123,6 +123,7 @@ public class BakingActivity extends AppCompatActivity implements IVolleyCallback
         return recipeListRequestQueue;
     }
 
+
     private void updateWidget(){
         Intent intent = new Intent(this,BakingAppWidgetProvider.class);
         intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);

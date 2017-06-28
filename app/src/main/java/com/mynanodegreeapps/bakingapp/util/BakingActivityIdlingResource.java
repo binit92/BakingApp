@@ -23,10 +23,15 @@ public class BakingActivityIdlingResource implements IdlingResource {
 
     private Field mCurrentRequests;
     private RequestQueue mVolleyRequestQueue;
+    private Request volleyRequest;
 
-    public BakingActivityIdlingResource(BakingActivity bakingActivity){
+    public BakingActivityIdlingResource(BakingActivity bakingActivity) throws NoSuchFieldException {
         this.bakingActivity = bakingActivity;
         mVolleyRequestQueue = bakingActivity.getRequestQueue();
+
+        mCurrentRequests = RequestQueue.class.getDeclaredField("mCurrentRequests");
+        mCurrentRequests.setAccessible(true);
+
     }
 
     @Override
