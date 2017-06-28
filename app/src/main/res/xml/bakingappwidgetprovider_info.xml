@@ -3,7 +3,7 @@
     android:initialKeyguardLayout="@layout/baking_widget_provider"
     android:initialLayout="@layout/baking_widget_provider"
     android:minHeight="75dp"
-    android:minWidth="40dp"
+    android:minWidth="320dp"
     android:previewImage="@drawable/baking_junkfood"
     android:resizeMode="horizontal|vertical"
     android:updatePeriodMillis="8000"

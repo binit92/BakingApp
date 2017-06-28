@@ -2,6 +2,7 @@ package com.mynanodegreeapps.bakingapp.widget;
 
 import android.content.Context;
 import android.net.Uri;
+import android.text.Html;
 import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
@@ -60,16 +61,16 @@ public class BakingAppRemoteViewFactory implements RemoteViewsService.RemoteView
         Log.v(mContext.getClass().getSimpleName(), "pos: "+pos);
 
         RemoteViews rv = new RemoteViews(mContext.getPackageName(), R.layout.baking_widget_item);
-        rv.setTextViewText(R.id.recipeName, recipeArrayList.get(pos).getName());
+        String name = "<b>" + recipeArrayList.get(pos).getName() + "</b>";
+        rv.setTextViewText(R.id.recipeName, Html.fromHtml(name));
 
         int id = recipeArrayList.get(pos).getRecipeId();
 
 
         List<Ingredient> ingredients = getIngredients(id-1);
         StringBuffer buffer = new StringBuffer();
-        buffer.append(R.string.ingredients_tag);
         for(int i=0; i<ingredients.size(); i++){
-            buffer.append(ingredients.get(i).getIngredient() + "");
+            buffer.append(ingredients.get(i).getIngredient() + ",");
         }
         rv.setTextViewText(R.id.ingredients,buffer.toString());
         return rv;

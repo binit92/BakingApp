@@ -16,6 +16,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static android.support.test.espresso.Espresso.onView;
+import static android.support.test.espresso.action.ViewActions.click;
+import static android.support.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition;
+import static android.support.test.espresso.matcher.ViewMatchers.withId;
+
 
 /**
  * Created by inbkumar01 on 6/24/2017.
@@ -42,8 +46,10 @@ public class IdlingResourceBakingActivityTest {
 
     @Test
     public void testToRunAfterSync(){
-       // onData(anything()).inAdapterView(withId(R.id.recipeGrid)).atPosition(0).perform(click());
-        onView(ViewMatchers.withId(R.id.recipeGrid)).check(ViewAssertions.matches(ViewMatchers.isDisplayed()));
+       //[NotWorking] onData(anything()).inAdapterView(withId(R.id.recipeGrid)).atPosition(0).perform(click());
+        //[Working]  onView(ViewMatchers.withId(R.id.recipeGrid)).check(ViewAssertions.matches(ViewMatchers.isDisplayed()));
+        onView(withId(R.id.recipeGrid)).perform(actionOnItemAtPosition(0, click()));
+        //[NotWorking] onView(ViewMatchers.withId(R.id.recipeImage)).check(ViewAssertions.matches(ViewMatchers.isDisplayed()));
     }
 
     // Remember to unregister resource when not need to avoid malfunction
