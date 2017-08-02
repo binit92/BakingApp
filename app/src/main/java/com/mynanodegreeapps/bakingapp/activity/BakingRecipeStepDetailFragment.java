@@ -61,6 +61,7 @@ public class BakingRecipeStepDetailFragment extends Fragment implements ExoPlaye
     List<Step> steps;
     Step step;
     int position;
+    Uri currentVideoUrl;
 
     private SimpleExoPlayer mExoPlayer;
     private SimpleExoPlayerView mExoPlayerView;
@@ -95,7 +96,9 @@ public class BakingRecipeStepDetailFragment extends Fragment implements ExoPlaye
     @Override
     public void onResume() {
         super.onResume();
-
+        if(currentVideoUrl != null && !currentVideoUrl.toString().isEmpty()) {
+            initializeExoPlayer(currentVideoUrl);
+        }
     }
 
     @Nullable
@@ -180,8 +183,9 @@ public class BakingRecipeStepDetailFragment extends Fragment implements ExoPlaye
         }
         releasePlayer();
 
+        currentVideoUrl = Uri.parse(step.getVideoUrl());
         initializeMediaSession();
-        initializeExoPlayer(Uri.parse(step.getVideoUrl()));
+        initializeExoPlayer(currentVideoUrl);
 
         if(step.getDescription() != null) {
             TextView stepDescription = new TextView(getActivity().getApplicationContext());
@@ -220,7 +224,6 @@ public class BakingRecipeStepDetailFragment extends Fragment implements ExoPlaye
     }
     public void setPosition(int pos){
         position = pos;
-        System.out.println("--> position is " + position);
         if(position >=0 && position<steps.size()) {
             step = steps.get(position);
         }
@@ -228,8 +231,7 @@ public class BakingRecipeStepDetailFragment extends Fragment implements ExoPlaye
     }
 
     private void initializeExoPlayer(Uri mediaUri){
-        System.out.println("--> mediaUri is " + mediaUri);
-            if(mExoPlayer == null){
+        if(mExoPlayer == null){
             // create an instance of exoplayer
             TrackSelector trackSelector = new DefaultTrackSelector();
             LoadControl loadControl = new DefaultLoadControl();
@@ -279,10 +281,7 @@ public class BakingRecipeStepDetailFragment extends Fragment implements ExoPlaye
 
         // Start the media Session since fragment is active
         mMediaSession.setActive(true);
-
-
     }
-
 
     @Override
     public void onTimelineChanged(Timeline timeline, Object manifest) {
