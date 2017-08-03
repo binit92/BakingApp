@@ -1,21 +1,32 @@
 package com.mynanodegreeapps.bakingapp.util;
 
+import android.app.Application;
+import android.app.PendingIntent;
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.RemoteViews;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.github.ivbaranov.mfb.MaterialFavoriteButton;
 import com.mynanodegreeapps.bakingapp.R;
 import com.mynanodegreeapps.bakingapp.activity.BakingDetailActivity;
 import com.mynanodegreeapps.bakingapp.model.Recipe;
+import com.mynanodegreeapps.bakingapp.widget.BakingAppRemoteViewService;
+import com.mynanodegreeapps.bakingapp.widget.BakingAppWidgetProvider;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
+import static com.mynanodegreeapps.bakingapp.activity.BakingActivity.recipeListForWidget;
 
 public class RecipeImageAdapter extends RecyclerView.Adapter<RecipeImageAdapter.ViewHolder> {
 
@@ -55,6 +66,7 @@ public class RecipeImageAdapter extends RecyclerView.Adapter<RecipeImageAdapter.
         // Set item views based on your views and data model
         ImageView imageView = viewHolder.recipeImage;
         TextView recipeText = viewHolder.recipeText;
+        MaterialFavoriteButton favoriteButton = viewHolder.favButton;
 
         if(source == SOURCE_DB) {
             /* Todo : Get details from Database !
@@ -91,7 +103,43 @@ public class RecipeImageAdapter extends RecyclerView.Adapter<RecipeImageAdapter.
                     c.startActivity(intent);
                 }
             });
+
+            favoriteButton.setOnFavoriteChangeListener(new MaterialFavoriteButton.OnFavoriteChangeListener() {
+                @Override
+                public void onFavoriteChanged(MaterialFavoriteButton buttonView, boolean favorite) {
+                    if(favorite){
+                        // Get App Widget ID
+                        ComponentName name = new ComponentName(c, BakingAppWidgetProvider.class);
+                        int [] ids = AppWidgetManager.getInstance(c).getAppWidgetIds(name);
+
+                        // Get an Instance of AppWidgetManager
+                        AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(c);
+
+                        // Update RecipeListForWidget
+                        recipeListForWidget.clear();
+                        recipeListForWidget.add(selectedRecipe);
+
+                        // Update AppWidget with a Remote service
+                        RemoteViews views = new RemoteViews(c.getPackageName(), R.layout.baking_widget_provider);
+
+                        appWidgetManager.updateAppWidget(ids,views);
+                    }else{
+                        recipeListForWidget.remove(selectedRecipe);
+                    }
+                }
+            });
+
         }
+    }
+
+    private  void updateWidget(){
+        Intent intent = new Intent(c,BakingAppWidgetProvider.class);
+        intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+        // Use an array and EXTRA_APPWIDGET_IDS instead of AppWidgetManager.EXTRA_APPWIDGET_ID,
+        // since it seems the onUpdate() is only fired on that:
+        int ids[] = AppWidgetManager.getInstance(c).getAppWidgetIds(new ComponentName(c, BakingAppWidgetProvider.class));
+        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS,ids);
+        c.sendBroadcast(intent);
     }
 
     @Override
@@ -106,6 +154,7 @@ public class RecipeImageAdapter extends RecyclerView.Adapter<RecipeImageAdapter.
         // for any view that will be set as you render a row
         ImageView recipeImage;
         TextView recipeText;
+        MaterialFavoriteButton favButton;
         // We also create a constructor that accepts the entire item row
         // and does the view lookups to find each subview
         public ViewHolder(View itemView) {
@@ -114,6 +163,10 @@ public class RecipeImageAdapter extends RecyclerView.Adapter<RecipeImageAdapter.
             super(itemView);
             recipeImage = (ImageView) itemView.findViewById(R.id.recipeImage);
             recipeText =  (TextView) itemView.findViewById(R.id.recipeText);
+            favButton = (MaterialFavoriteButton) itemView.findViewById(R.id.favorite);
+
         }
     }
+
+
 }

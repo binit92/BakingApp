@@ -20,16 +20,16 @@ import com.mynanodegreeapps.bakingapp.util.ResponseReader;
 
 import org.json.JSONArray;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import static com.mynanodegreeapps.bakingapp.activity.BakingActivity.recipeArrayList;
+import static com.mynanodegreeapps.bakingapp.activity.BakingActivity.recipeListForWidget;
 
 public class BakingAppRemoteViewFactory implements RemoteViewsService.RemoteViewsFactory {
 
     private Context mContext;
     JsonArrayRequest recipeListRequest;
     RequestQueue recipeListRequestQueue;
-
 
     public  BakingAppRemoteViewFactory(Context c){
         mContext = c;
@@ -42,6 +42,7 @@ public class BakingAppRemoteViewFactory implements RemoteViewsService.RemoteView
 
     @Override
     public void onDataSetChanged() {
+        System.out.println("--> onDataSetChanged()");
         getData();
     }
 
@@ -52,22 +53,22 @@ public class BakingAppRemoteViewFactory implements RemoteViewsService.RemoteView
 
     @Override
     public int getCount() {
-        return recipeArrayList.size();
+        return recipeListForWidget.size();
     }
 
     @Override
     public RemoteViews getViewAt(int pos) {
 
+        System.out.println("--> get View At " + pos);
         Log.v(mContext.getClass().getSimpleName(), "pos: "+pos);
 
         RemoteViews rv = new RemoteViews(mContext.getPackageName(), R.layout.baking_widget_item);
-        String name = "<b>" + recipeArrayList.get(pos).getName() + "</b>";
+        String name = "<b>" + recipeListForWidget.get(pos).getName() + "</b>";
         rv.setTextViewText(R.id.recipeName, Html.fromHtml(name));
 
-        int id = recipeArrayList.get(pos).getRecipeId();
+        int id = recipeListForWidget.get(pos).getRecipeId();
 
-
-        List<Ingredient> ingredients = getIngredients(id-1);
+        List<Ingredient> ingredients = getIngredients(id);
         StringBuffer buffer = new StringBuffer();
         for(int i=0; i<ingredients.size(); i++){
             buffer.append(ingredients.get(i).getIngredient() + ",");
@@ -97,6 +98,7 @@ public class BakingAppRemoteViewFactory implements RemoteViewsService.RemoteView
     }
 
     public void getData(){
+
         recipeListRequestQueue =  Volley.newRequestQueue(mContext);
         Uri requestUri = Uri.parse(mContext.getString(R.string.SERVER_URL));
         recipeListRequest = new JsonArrayRequest(Request.Method.GET
@@ -108,7 +110,7 @@ public class BakingAppRemoteViewFactory implements RemoteViewsService.RemoteView
 
                 ResponseReader reader = new ResponseReader();
                 List<Recipe> recipes = reader.parseJSON(response);
-                recipeArrayList = recipes;
+                recipeListForWidget = recipes;
 
             }
         }, new Response.ErrorListener() {
@@ -122,8 +124,8 @@ public class BakingAppRemoteViewFactory implements RemoteViewsService.RemoteView
     }
 
     public List<Ingredient> getIngredients(int recipeId){
-
-        if(recipeArrayList.isEmpty()){
+        System.out.println("--> getIngredients , recipeId " + recipeId);
+        /*if(recipeListForWidget.isEmpty()){
 
             Uri requestUri = Uri.parse(mContext.getString(R.string.SERVER_URL));
             RequestQueue recipeListRequestQueue  =  Volley.newRequestQueue(mContext);;
@@ -136,7 +138,7 @@ public class BakingAppRemoteViewFactory implements RemoteViewsService.RemoteView
 
                     ResponseReader reader = new ResponseReader();
                     List<Recipe> recipes = reader.parseJSON(response);
-                    recipeArrayList = recipes;
+                    recipeListForWidget = recipes;
                 }
             }, new Response.ErrorListener() {
                 @Override
@@ -144,8 +146,13 @@ public class BakingAppRemoteViewFactory implements RemoteViewsService.RemoteView
 
                 }
             });
+        }*/
+        for(Recipe recipe : recipeListForWidget){
+            if(recipe.getRecipeId() == recipeId){
+                return recipe.getIngredients();
+            }
         }
-        return recipeArrayList.get(recipeId).getIngredients();
+        return null;
 
     }
 }

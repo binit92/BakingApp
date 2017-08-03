@@ -26,4 +26,9 @@
         android:layout_marginStart="@dimen/margin"
         android:textColor="@color/colorPrimaryDark"/>
 
+    <com.github.ivbaranov.mfb.MaterialFavoriteButton
+        android:id="@+id/favorite"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
 </LinearLayout>

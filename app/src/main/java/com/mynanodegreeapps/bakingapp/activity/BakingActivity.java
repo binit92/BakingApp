@@ -43,6 +43,7 @@ public class BakingActivity extends AppCompatActivity implements IVolleyCallback
     private RecyclerView recipeGrid;
     private RecipeImageAdapter recipeImageAdapter;
     public static List<Recipe> recipeArrayList = new ArrayList<>();
+    public static List<Recipe> recipeListForWidget = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -124,7 +125,7 @@ public class BakingActivity extends AppCompatActivity implements IVolleyCallback
     }
 
 
-    private void updateWidget(){
+    private  void updateWidget(){
         Intent intent = new Intent(this,BakingAppWidgetProvider.class);
         intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
         // Use an array and EXTRA_APPWIDGET_IDS instead of AppWidgetManager.EXTRA_APPWIDGET_ID,

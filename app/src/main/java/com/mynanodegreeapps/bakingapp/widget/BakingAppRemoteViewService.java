@@ -7,6 +7,8 @@ public class BakingAppRemoteViewService extends RemoteViewsService {
 
     @Override
     public RemoteViewsFactory onGetViewFactory(Intent intent) {
-           return new BakingAppRemoteViewFactory(this.getApplicationContext());
+        System.out.println("--> onGetViewFactory ");
+          return new BakingAppRemoteViewFactory(this.getApplicationContext());
+
     }
 }

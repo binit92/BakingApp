@@ -78,8 +78,6 @@ public class BakingRecipeDetailFragment extends Fragment implements IRecipeStepC
         b.putParcelableArrayList("steps",(ArrayList<? extends Parcelable>)steps);
         b.putInt("position",recipeStep-1);
 
-        System.out.println("--> on RecipeSelect is "+ (recipeStep-1));
-
         BakingRecipeStepDetailFragment bRSDF = new BakingRecipeStepDetailFragment();
         bRSDF.setArguments(b);
 
