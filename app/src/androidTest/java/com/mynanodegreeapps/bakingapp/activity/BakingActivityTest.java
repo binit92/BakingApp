@@ -44,6 +44,8 @@ public class BakingActivityTest {
         Espresso.registerIdlingResources(idlingResource);
     }
 
+
+    // UI test that involves interaction with expo player previous and next button using IdilingResources 
     @Test
     public void bakingActivityTest() {
 
