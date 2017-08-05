@@ -108,24 +108,11 @@ public class RecipeImageAdapter extends RecyclerView.Adapter<RecipeImageAdapter.
                 @Override
                 public void onFavoriteChanged(MaterialFavoriteButton buttonView, boolean favorite) {
                     if(favorite){
-                        // Get App Widget ID
-                        ComponentName name = new ComponentName(c, BakingAppWidgetProvider.class);
-                        int [] ids = AppWidgetManager.getInstance(c).getAppWidgetIds(name);
-
-                        // Get an Instance of AppWidgetManager
-                        AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(c);
-
-                        // Update RecipeListForWidget
-                        recipeListForWidget.clear();
-                        recipeListForWidget.add(selectedRecipe);
-
-                        // Update AppWidget with a Remote service
-                        RemoteViews views = new RemoteViews(c.getPackageName(), R.layout.baking_widget_provider);
-
-                        appWidgetManager.updateAppWidget(ids,views);
+                       recipeListForWidget.add(selectedRecipe);
                     }else{
                         recipeListForWidget.remove(selectedRecipe);
                     }
+                    updateWidget();
                 }
             });
 

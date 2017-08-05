@@ -76,14 +76,6 @@ public class BakingAppWidgetProvider extends AppWidgetProvider {
                 PendingIntent.FLAG_UPDATE_CURRENT
         );
         views.setPendingIntentTemplate(R.id.widgetList,ingredientPendingIntent);
-//
-//        Intent ingredientIntent = new Intent(context, BakingIngredientListActivity.class);
-//        PendingIntent ingredientPendingIntent = PendingIntent.getActivity(
-//                context,
-//                0,
-//                ingredientIntent,
-//                PendingIntent.FLAG_UPDATE_CURRENT);
-//        views.setPendingIntentTemplate(R.id.widgetList,ingredientPendingIntent);
 
         return views;
     }

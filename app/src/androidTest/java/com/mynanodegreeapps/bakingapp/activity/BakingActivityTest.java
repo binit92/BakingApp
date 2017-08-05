@@ -57,8 +57,6 @@ public class BakingActivityTest {
         // Verify that ExoPlayer exits !
         onView(withId(R.id.videoContainer)).check(matches(isDisplayed()));
 
-
-
     }
 
     @After
